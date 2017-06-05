@@ -5,7 +5,6 @@
 	usb.on('attach', function(device) { ... });
 	usb.on('detach', function(device) { ... });
 
-
 */
 
 
@@ -22,12 +21,13 @@ const lifecycle = {
 		this.render()
 		this.delegateEvents()
 
-		UVCControl.controls.forEach(name => {
-			console.log(name)
-		})
-
 		webcamDevices.getWebcams()
-			.then(webcams => console.log(webcams))
+			.then(webcams => {
+				console.log(webcams)
+				if(webcams.length){
+					this.initWebcam(webcams[0])
+				}
+			})
 			.catch(err => console.error(err))
 	}
 }
@@ -44,8 +44,40 @@ const methods = {
 
 	render (){
 		xtag.innerHTML(this, `
-			<h1>${componentName}</h1>
+
 		`)
+	},
+
+	initWebcam(webcam){
+		this.camera = new UVCControl(webcam.vendorId, webcam.productId)
+		
+		var controlInfoPromises = UVCControl.controls.map((name, i) => {
+			var info = {name}
+			return new Promise((resolve, reject) => {
+				this.camera.get(name, (error, value) => {
+					info.value = value
+					if(error) {
+						return reject(error)
+					}
+					this.camera.range(name, (error, value) => {
+						info.range = value
+						if(error){
+							// error.type = 'range'
+							// info.error = error
+							// dunno... some params don't have range value
+						}
+						resolve(info)
+					})
+				})
+			})
+		})
+
+		Promise.all(controlInfoPromises).then(controls => {
+			var listControls = controls.filter(control => !control.range)
+			var rangeControls = controls.filter(control => control.range)
+			console.log('listControls', listControls)
+			console.log('rangeControls', rangeControls)
+		}).catch(err => console.error(err))
 	}
 }
 

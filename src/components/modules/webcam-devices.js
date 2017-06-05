@@ -1,3 +1,4 @@
+
 /*
 
 	getWebcams()
@@ -14,7 +15,6 @@
 
 */
 
-
 // https://www.npmjs.com/package/usb
 const usb = require('usb')
 
@@ -22,13 +22,18 @@ const WebcamDevice = function(name, device){
 
 	this.name = name
 	this.device = device
+	this.deviceAddress = '0x' + device.deviceAddress.toString(16)
 	this.vendorId = '0x' + device.deviceDescriptor.idVendor.toString(16)
 	this.productId = '0x' + device.deviceDescriptor.idProduct.toString(16)
 }
 
 WebcamDevice.validate = device => { return new Promise((resolve, reject) => {
+	
+	// console.log(device)
+
 	if (device.deviceDescriptor.iProduct) {
 		device.open()
+		
 		// http://www.usb.org/developers/defined_class/#BaseClass10h
 		if(device.deviceDescriptor.bDeviceClass === 239 && device.deviceDescriptor.bDeviceSubClass === 2){
 			device.getStringDescriptor(device.deviceDescriptor.iProduct, (error, deviceName) => {
@@ -36,15 +41,15 @@ WebcamDevice.validate = device => { return new Promise((resolve, reject) => {
 				device.close()
 				resolve( new WebcamDevice(deviceName, device) )
 			})			
-		}else resolve(false)
-	}else resolve(false)
+		} else resolve(false)
+	} else resolve(false)
 })}
 
 const getWebcams = () => { return new Promise((resolve, reject) => {
 
 	var promises = usb.getDeviceList().map(WebcamDevice.validate)
 	Promise.all(promises).then(results => {
-		resolve(results.filter(w => w))
+		resolve(results.filter(w => w)) // rm nulls
 	})
 
 })}

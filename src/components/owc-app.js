@@ -1,6 +1,6 @@
 const xtag = require('x-tag')
 require('./components/owc-controls')
-require('./components/owc-webcam')
+require('./components/owc-camera')
 
 const componentName = 'owc-app'
 const ComponentBase = require('./components/component-base.js')
@@ -25,8 +25,7 @@ const methods = {
 
 	render (){
 		xtag.innerHTML(this, `
-			<h1>${componentName}</h1>
-			<owc-webcam></owc-webcam>
+			<owc-camera></owc-camera>
 			<owc-controls></owc-controls>
 		`)
 	}
