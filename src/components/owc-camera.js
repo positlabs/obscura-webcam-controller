@@ -8,23 +8,27 @@ const lifecycle = {
 		this.delegateEvents({})
 		this.render()
 
+		// TODO: pause/resume stream on window blur/focus
+
+		// TODO: wait until we have an exact ID to use
 		navigator.mediaDevices.enumerateDevices().then(devices => {
 
 			var constraints = {
 				video: {
-					width: { min: 1280 },
-					height: { min: 720 },
+					width: { min: 1280, max: 1920 },
+					height: { min: 720, max: 1080 },
 				},
 				audio: false
 			}
 			
 			// default to logitech c920
-			// var logitechDevice = _.filter(devices, device => {
-			// 	return device.label.match('C920') !== null && device.kind === 'videoinput'
-			// })[0]
-			// if(logitechDevice){
-			// 	constraints.video.deviceId = {exact: logitechDevice.deviceId}
-			// }
+			var logitechDevice = devices.filter(device => {
+				console.log(device.label, device.deviceId, device.kind)
+				return device.label.match('C920') !== null && device.kind === 'videoinput'
+			})[0]
+			if(logitechDevice){
+				constraints.video.deviceId = {exact: logitechDevice.deviceId}
+			}
 
 			navigator.mediaDevices.getUserMedia(constraints).then(stream => {
 				this._video.srcObject = stream
